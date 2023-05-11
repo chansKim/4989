@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+
+	<insert id="addMember" parameterType="com.ju.chan.dto.MemberDto">
+		INSERT INTO MEMBER
+		(M_MAIL, M_PASSWORD, M_NAME, M_PHONE, M_MAIN_MENTION, CTIME, MTIME)
+		VALUES
+		(#{m_mail},#{m_password},#{m_name},#{m_phone},'There are no introduction.',now(),now())
+	</insert>
+	
+	<insert id="addFollow_init" parameterType="com.ju.chan.dto.FollowDto">
+		INSERT INTO FOLLOW
+		(M_MAIL, FACE_MAIL, CTIME, MTIME)
+		VALUES
+		(#{m_mail},#{face_mail},now(),now())
+	</insert>
+
+	<select id="login" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.MemberDto">
+		SELECT * FROM MEMBER
+		WHERE M_MAIL=#{m_mail} AND
+		M_PASSWORD=#{m_password}
+	</select>
+	
+	<delete id="withdrawal" parameterType="com.ju.chan.dto.MemberDto">
+		DELETE FROM MEMBER
+		WHERE M_MAIL=#{m_mail}
+	</delete>
+	
+	<delete id="withdrawal_follow" parameterType="com.ju.chan.dto.MemberDto">
+		DELETE FROM FOLLOW
+		WHERE M_MAIL=#{m_mail}
+	</delete>
+
+	<insert id="uploadMainPic" parameterType="com.ju.chan.dto.ResourceDto">
+		INSERT INTO
+		UPLOADRESOURCE (M_MAIL,R_NAME,R_TYPE,CTIME,MTIME)
+		VALUES(#{m_mail},#{r_name},5,now(),now())
+	</insert>
+	
+	<update id="uploadMainPic_Member" parameterType="com.ju.chan.dto.ResourceDto">
+		UPDATE MEMBER SET
+		M_MAIN_PHOTO=
+		(select r_id from uploadresource where m_mail=#{m_mail} order by r_id desc limit 1),
+		MTIME = now() WHERE M_MAIL=#{m_mail}
+	</update>
+
+	<select id="getResource" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.ResourceDto">
+		SELECT *
+		FROM UPLOADRESOURCE
+		WHERE M_MAIL=#{m_mail} AND r_id=#{m_main_photo}
+	</select>
+	
+	<!-- 댓글 -->
+	<insert id="addReply" parameterType="com.ju.chan.dto.ReplyDto">
+		INSERT INTO REPLY
+		(R_ID, M_MAIL, CTIME, MTIME, CONTENT, SECRETTYPE)
+		VALUES
+		(#{r_id},#{m_mail},now(),now(),#{content},#{secretType})
+	</insert>
+
+	<select id="replyList" parameterType = "int" resultType="com.ju.chan.dto.ReplyDto">
+		SELECT ID, R_ID, M_MAIL, CTIME, MTIME, CONTENT, SECRETTYPE 
+		FROM REPLY 
+		WHERE R_ID=#{r_id}
+	</select>
+	
+	<select id="open_phone" parameterType="com.ju.chan.dto.ResourceDto"
+		resultType="com.ju.chan.dto.MemberDto">
+		SELECT *
+		FROM MEMBER
+		WHERE m_mail = #{m_mail}
+	</select>
+
+	<delete id="deleteReply" parameterType="int">
+		DELETE FROM REPLY
+		WHERE ID=#{id}
+	</delete>
+	
+</mapper>

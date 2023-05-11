@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="chan:war">
+    <output-path>$PROJECT_DIR$/META-INF/maven/com.ju/chan/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>chan</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="chan-1.0.0-BUILD-SNAPSHOT.war">
+      <element id="artifact" artifact-name="chan:war exploded" />
+    </root>
+  </artifact>
+</component>

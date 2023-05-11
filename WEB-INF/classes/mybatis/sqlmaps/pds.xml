@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CustPDSMap">
+
+	<!-- /** -->
+	<!-- * @param r_id -->
+	<!-- * @param m_email -->
+	<!-- * @param r_name -->
+	<!-- * @param r_title -->
+	<!-- * @param r_type -->
+	<!-- * @param r_context -->
+	<!-- * @param ctime -->
+	<!-- * @param mtime -->
+	<!-- */ -->
+	<delete id="deleteProfile" >
+		DELETE FROM UPLOADRESOURCE WHERE M_MAIL=#{m_mail} AND R_ID=5
+	</delete>
+	
+	<select id="getMyProfile" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="java.lang.String">
+		SELECT r_name
+		FROM UPLOADRESOURCE
+		WHERE M_MAIL=#{m_mail} AND r_type=5 ORDER BY mtime DESC LIMIT 1
+	</select>
+	
+	<select id="getRecommandMember" parameterType="java.lang.String"
+	resultType="com.ju.chan.dto.MemberDto">
+		select * FROM member WHERE M_MAIL NOT LIKE #{m_mail} AND M_MAIL NOT IN (select face_mail from follow where m_mail = #{m_mail})
+		 ORDER BY mtime DESC LIMIT 3
+	</select>
+	
+	<delete id="deletePost" parameterType="com.ju.chan.dto.ResourceDto">
+		DELETE FROM UPLOADRESOURCE WHERE M_MAIL=#{m_mail} AND R_ID = #{r_id}
+	</delete>
+	
+	<insert id="uploadPDS_movie" parameterType="com.ju.chan.dto.ResourceDto">
+		INSERT INTO
+		UPLOADRESOURCE(R_NAME,M_MAIL,R_TITLE,R_TYPE,POST_TYPE, NUMBER_TYPE,R_CONTENT,CTIME,MTIME)
+		VALUES(#{r_name},#{m_mail},#{r_title},1,#{post_type},#{number_type},#{r_content},now(),now())
+	</insert>
+	
+	<insert id="uploadPDS_picture" parameterType="com.ju.chan.dto.ResourceDto">
+		INSERT INTO
+		UPLOADRESOURCE(R_NAME,M_MAIL,R_TITLE,R_TYPE,POST_TYPE, NUMBER_TYPE,R_CONTENT,CTIME,MTIME)
+		VALUES(#{r_name},#{m_mail},#{r_title},2,#{post_type},#{number_type},#{r_content},now(),now())
+	</insert>
+	
+	<insert id="uploadPDS_text" parameterType="com.ju.chan.dto.ResourceDto">
+		INSERT INTO
+		UPLOADRESOURCE(R_NAME,M_MAIL,R_TITLE,R_TYPE,POST_TYPE, NUMBER_TYPE,R_CONTENT,CTIME,MTIME)
+		VALUES('text',#{m_mail},#{r_title},3,#{post_type},#{number_type},#{r_content},now(),now())
+	</insert>
+	
+	<insert id="uploadPDS_audio" parameterType="com.ju.chan.dto.ResourceDto">
+		INSERT INTO
+		UPLOADRESOURCE(R_NAME,M_MAIL,R_TITLE,R_TYPE,POST_TYPE, NUMBER_TYPE,R_CONTENT,CTIME,MTIME)
+		VALUES(#{r_name},#{m_mail},#{r_title},4,#{post_type},#{number_type},#{r_content},now(),now())
+	</insert>
+
+	<select id="getPDSList" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.ResourceDto">
+		select r_id, m_mail, r_name, r_title, r_content, ctime, mtime from uploadresource 
+		where m_mail = #{m_mail} order by mtime desc limit 10
+	</select>
+	
+	<select id="getPDSListTest" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.ResourceDto">
+		select r_id, m_mail, r_name, r_title, r_content, ctime, mtime from uploadresource
+	</select>
+
+	<select id="getSearch" parameterType="java.util.Map"
+		resultType="com.ju.chan.dto.MemberDto">
+		SELECT * FROM MEMBER
+		WHERE M_MAIL != #{m_mail} AND M_MAIL LIKE CONCAT('%', #{keyword}, '%')
+	</select>
+	    	    
+	<select id="getSearch2" parameterType="java.util.Map"
+		resultType="com.ju.chan.dto.ResourceDto">
+		SELECT * FROM UPLOADRESOURCE
+		WHERE M_MAIL NOT LIKE #{m_mail} AND R_TYPE IN (1,2,3,4) AND (R_TITLE LIKE CONCAT('%', #{keyword}, '%')  OR
+		R_CONTENT LIKE CONCAT('%', #{keyword}, '%') OR K_NAME LIKE CONCAT('%', #{keyword}, '%'))
+	</select>
+	
+	<select id="getResource_mine" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.ResourceDto">
+		SELECT *
+		FROM UPLOADRESOURCE
+		WHERE M_MAIL=#{m_mail} AND R_TYPE IN (1,2,3,4) OR K_NAME IN (SELECT K_NAME FROM FOLLOW WHERE M_MAIL = #{m_mail}) ORDER BY CTIME DESC
+	</select>
+	
+	<select id="getResourceFollow" parameterType="com.ju.chan.dto.FollowDto"
+		resultType="com.ju.chan.dto.ResourceDto">
+		SELECT *
+		FROM UPLOADRESOURCE
+		WHERE M_MAIL=#{m_mail} AND R_TYPE IN (1,2,3,4) OR K_NAME IN (SELECT K_NAME FROM FOLLOW WHERE M_MAIL = #{m_mail}) ORDER BY CTIME DESC
+	</select>
+	<!-- OR K_NAME LIKE CONCAT('%', #{k_name}, '%')  -->
+	<!-- SELECT *
+		FROM UPLOADRESOURCE
+		WHERE M_MAIL=#{m_mail} AND R_TYPE IN (1,2,3,4) OR K_NAME IN (SELECT K_NAME FROM FOLLOW WHERE M_MAIL = #{m_mail}) ORDER BY CTIME DESC -->
+	<!-- SELECT *
+		FROM UPLOADRESOURCE
+		WHERE 1=1
+		AND R_TYPE IN (1,2,3,4)
+		AND M_MAIL='2@2'
+		AND (K_NAME IN (SELECT K_NAME FROM FOLLOW WHERE M_MAIL = '2@2') 
+		OR (SELECT K_NAME FROM FOLLOW WHERE K_NAME LIKE CONCAT('%', 1, '%'))); -->
+	
+	<select id="getFollow" parameterType="java.lang.String"
+		resultType="com.ju.chan.dto.FollowDto">
+		SELECT *
+		FROM follow
+		WHERE M_MAIL=#{m_mail} AND FACE_MAIL IS NOT NULL
+	</select>
+	
+	<select id="getCategory" 
+		resultType="com.ju.chan.dto.CategoryDto">
+		SELECT *
+		FROM CATEGORY
+	</select>
+	
+	<!-- 트렌드 키워드(나의 팔로우의 키워드를 제외함) -->
+	<select id="getKeyword_all" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.FollowDto">
+		SELECT K_NAME FROM FOLLOW WHERE M_MAIL != #{m_mail} AND K_NAME IS NOT NULL
+	</select>
+	
+	<!-- 나의 키워드 검색 -->
+	<select id="getKeyword" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.KeywordDto">
+		SELECT K_NAME
+		FROM FOLLOW WHERE M_MAIL = #{m_mail} AND K_NAME IS NOT NULL
+	</select>
+	
+	<!-- 나의 키워드에 팔로우 여부 검사 -->
+	<select id="getMyKeyword" parameterType="java.util.Map"
+		resultType="com.ju.chan.dto.FollowDto">
+		SELECT F.K_NAME
+		FROM FOLLOW F, MEMBER M WHERE K_NAME = #{search_keyword} AND K_NAME IS NOT NULL AND M.M_MAIL = #{m_mail}
+	</select>
+	
+	<insert id="setFollow_keyword" parameterType="com.ju.chan.dto.FollowDto">
+		INSERT INTO
+		FOLLOW(M_MAIL, K_NAME,CTIME, MTIME)
+		VALUES(#{m_mail},#{k_name},now(),now())
+	</insert>
+	
+	<select id="keyword_search_check" parameterType="java.lang.String"
+	resultType="com.ju.chan.dto.KeywordDto">
+		SELECT K_NAME FROM KEYWORD
+		WHERE K_NAME = #{search_keyword}
+	</select>
+	
+<!-- <insert id="setKeyword" parameterType="java.lang.String">
+		INSERT INTO
+		KEYWORD(K_NAME)
+		VALUES(#{k_name})
+	</insert> -->
+	
+	<insert id="setFollow" parameterType="com.ju.chan.dto.FollowDto">
+		INSERT INTO
+		FOLLOW(M_MAIL, FACE_MAIL,CTIME, MTIME)
+		VALUES(#{m_mail},#{face_mail},now(),now())
+	</insert>
+	
+	<insert id="setFollow2" parameterType="com.ju.chan.dto.FollowDto">
+		INSERT INTO
+		FOLLOW(M_MAIL, K_NAME,CTIME, MTIME)
+		VALUES(#{m_mail},#{k_name},now(),now())
+	</insert>
+	
+	<delete id="setUnFollow2" parameterType="com.ju.chan.dto.FollowDto">
+		DELETE FROM FOLLOW WHERE M_MAIL=#{m_mail} AND K_NAME=#{k_name}
+	</delete>
+	
+	<delete id="setUnFollow" parameterType="com.ju.chan.dto.FollowDto">
+		DELETE FROM FOLLOW WHERE M_MAIL=#{m_mail} AND FACE_MAIL=#{face_mail}
+	</delete>
+	
+	<select id="getFollowResource" parameterType="java.util.Map"
+		resultType="com.ju.chan.dto.ResourceDto">
+		SELECT * 
+		FROM UPloadResource where R_TYPE != 5 AND POST_TYPE = #{post_type} AND (M_MAIL = #{m_mail}
+		OR M_MAIL IN (select face_mail from follow where m_mail = #{m_mail}))
+		ORDER BY CTIME DESC
+	</select>
+	
+	<select id="getFollowResource2" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.ResourceDto">
+		SELECT * 
+		FROM UPloadResource where R_TYPE != 5 AND M_MAIL = #{m_mail} OR M_MAIL IN (select face_mail from follow where m_mail = #{m_mail})
+		ORDER BY CTIME DESC
+	</select>
+	
+	
+	<insert id="send_message" parameterType="com.ju.chan.dto.MessageDto">
+		INSERT INTO NOTE(m_mail, face_mail, n_content, ctime, mtime)
+		VALUES(#{m_mail}, #{face_mail}, #{n_content}, now(), now())
+	</insert>
+	
+	<select id="get_myMessage" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.MessageDto">
+		SELECT *
+		FROM NOTE
+		WHERE face_mail = #{m_mail} order by ctime desc
+	</select>
+	
+	<select id="get_sendMessage" parameterType="com.ju.chan.dto.MemberDto"
+		resultType="com.ju.chan.dto.MessageDto">
+		SELECT *
+		FROM NOTE
+		WHERE m_mail = #{m_mail} order by ctime desc
+	</select>
+	
+	<select id="updateMyPost" parameterType="com.ju.chan.dto.ResourceDto">
+		UPDATE UPLOADRESOURCE
+		SET POST_TYPE = 3
+		WHERE R_ID = #{r_id}
+	</select>
+	
+	<!-- email 확인 -->
+	<select id="searchMEmail" parameterType="String" resultType="java.lang.Integer">
+		SELECT COUNT(M_MAIL) FROM MEMBER
+		WHERE M_MAIL = #{search_keyword}
+	</select>
+	
+	<insert id="set_myScrap" parameterType="com.ju.chan.dto.ScrapDto">
+		INSERT INTO like_product(r_id, m_mail, ctime, mtime)
+		VALUES(#{r_id}, #{m_mail}, now(), now())
+	</insert>
+	
+	<select id="get_myScrap" parameterType="com.ju.chan.dto.MemberDto"
+	 resultType="com.ju.chan.dto.ResourceDto">
+		select * from uploadresource where r_id in (
+		SELECT r_id
+		FROM like_product
+		WHERE m_mail = #{m_mail} order by ctime desc)
+	</select>
+	
+	<insert id="send_report" parameterType="com.ju.chan.dto.ReportDto">
+		INSERT INTO errorReport(m_mail, r_id, e_content, ctime, mtime)
+		VALUES(#{m_mail}, #{r_id}, #{e_content}, now(), now())
+	</insert>
+	
+	
+</mapper>
